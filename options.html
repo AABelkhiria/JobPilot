@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Cover Letter Settings</title>
+    <style>
+        body { font-family: sans-serif; padding: 10px 20px; width: 400px; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        button { margin-top: 20px; padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        #status { margin-top: 10px; color: green; }
+    </style>
+</head>
+<body>
+    <h1>Settings</h1>
+    <p>Your information will be used to generate the cover letter.</p>
+    
+    <label for="apiKey">Gemini API Key (Required & Kept Secret)</label>
+    <input type="password" id="apiKey">
+
+    <label for="fullName">Full Name</label>
+    <input type="text" id="fullName">
+
+    <label for="email">Email</label>
+    <input type="email" id="email">
+
+    <label for="phone">Phone Number</label>
+    <input type="tel" id="phone">
+
+    <label for="address">Address (Optional)</label>
+    <input type="text" id="address">
+
+    <label for="experience">Your Skills & Experience Summary</label>
+    <textarea id="experience" rows="6" placeholder="Example: 5+ years of experience in full-stack web development with expertise in React, Node.js, and cloud deployment on AWS. Proven ability to lead projects and mentor junior developers..."></textarea>
+
+    <button id="save">Save Settings</button>
+    <div id="status"></div>
+
+    <script src="options.js"></script>
+</body>
+</html>
