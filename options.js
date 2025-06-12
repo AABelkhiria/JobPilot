@@ -5,13 +5,16 @@ function save_options() {
   const email = document.getElementById('email').value;
   const phone = document.getElementById('phone').value;
   const address = document.getElementById('address').value;
+  //
+  const profile = document.getElementById('profile').value;
   const experience = document.getElementById('experience').value;
+  const skills = document.getElementById('skills').value;
 
   chrome.storage.sync.set({
     geminiApiKey: apiKey,
-    userInfo: { fullName, email, phone, address, experience }
+    //
+    userInfo: { fullName, email, phone, address, profile, experience, skills }
   }, function() {
-    // Update status to let user know options were saved.
     const status = document.getElementById('status');
     status.textContent = 'Options saved.';
     setTimeout(function() {
@@ -20,8 +23,7 @@ function save_options() {
   });
 }
 
-// Restores select box and checkbox state using the preferences
-// stored in chrome.storage.
+// Restores options from chrome.storage
 function restore_options() {
   chrome.storage.sync.get(['geminiApiKey', 'userInfo'], function(items) {
     document.getElementById('apiKey').value = items.geminiApiKey || '';
@@ -30,7 +32,10 @@ function restore_options() {
       document.getElementById('email').value = items.userInfo.email || '';
       document.getElementById('phone').value = items.userInfo.phone || '';
       document.getElementById('address').value = items.userInfo.address || '';
+      //
+      document.getElementById('profile').value = items.userInfo.profile || '';
       document.getElementById('experience').value = items.userInfo.experience || '';
+      document.getElementById('skills').value = items.userInfo.skills || '';
     }
   });
 }

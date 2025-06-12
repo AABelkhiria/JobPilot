@@ -6,7 +6,6 @@ function handleMessages(message) {
   if (message.target === 'offscreen-doc' && message.action === 'download-pdf') {
     downloadPdf(message.dataUri, message.filename);
     // Return true to indicate you will be sending a response asynchronously
-    // This is good practice, though we don't use it here.
     return true; 
   }
 }
