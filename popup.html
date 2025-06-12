@@ -2,11 +2,55 @@
 <html>
 <head>
     <title>Cover Letter AI</title>
+    <meta charset="utf-8">
     <style>
-        body { font-family: sans-serif; width: 300px; padding: 10px; text-align: center; }
-        button { width: 100%; padding: 12px; font-size: 16px; background-color: #007BFF; color: white; border: none; cursor: pointer; border-radius: 5px; margin-bottom: 20px; }
-        button:hover { background-color: #0056b3; }
-        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        :root {
+            /* --- "Dim Mode" Color Palette --- */
+            --bg-color: #22272e;
+            --surface-color: #2d333b;
+            --text-color: #adbac7;
+            --secondary-text-color: #768390;
+            --accent-color: #539bf5;
+            --accent-hover-color: #6cb6f5;
+            --success-color: #57ab5a;
+            --error-color: #e5534b;
+            --border-color: #444c56;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            width: 320px;
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #cdd9e5; /* Brighter heading */
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 25px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+
+        button:hover { background-color: var(--accent-hover-color); }
+        button:disabled { background-color: #373e47; color: #768390; cursor: not-allowed; }
 
         /* --- Progress Stepper Styles --- */
         #progress-steps {
@@ -17,61 +61,71 @@
         }
         #progress-steps li {
             position: relative;
-            padding-left: 30px;
-            margin-bottom: 10px;
-            color: #aaa; /* Default pending state */
+            padding-left: 35px;
+            margin-bottom: 15px;
+            color: var(--secondary-text-color);
+            font-size: 14px;
             transition: color 0.3s ease;
         }
+        /* Connecting line */
+        #progress-steps li:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 15px;
+            width: 2px;
+            height: 100%;
+            background-color: var(--border-color);
+        }
+        /* Bullet point */
         #progress-steps li::before {
             content: '';
             position: absolute;
-            left: 5px;
-            top: 5px;
-            width: 10px;
-            height: 10px;
+            left: 4px;
+            top: 4px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
-            background-color: #aaa; /* Default pending bullet */
-            transition: background-color 0.3s ease;
+            background-color: var(--border-color); /* Pending bullet */
+            border: 2px solid var(--bg-color);
+            transition: all 0.3s ease;
+            z-index: 1;
         }
+
         /* Active state */
         #progress-steps li.active {
-            color: #00529B; /* Active text color */
-            font-weight: bold;
+            color: var(--accent-color);
+            font-weight: 600;
         }
-        #progress-steps li.active::before {
-            background-color: #007BFF; /* Active bullet color */
-        }
+        #progress-steps li.active::before { background-color: var(--accent-color); }
+
         /* Completed state */
-        #progress-steps li.completed {
-            color: #4CAF50; /* Completed text color */
-        }
+        #progress-steps li.completed { color: var(--success-color); }
         #progress-steps li.completed::before {
-            content: '✓'; /* Checkmark */
-            background-color: #4CAF50; /* Completed bullet color */
+            content: '✓';
+            background-color: var(--success-color);
             color: white;
             text-align: center;
-            line-height: 11px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        /* Error state */
-        #progress-steps li.error {
-            color: #D8000C; /* Error text color */
-            font-weight: bold;
-        }
-        #progress-steps li.error::before {
-            content: '×'; /* X mark */
-            background-color: #D8000C;
-            color: white;
-            text-align: center;
-            line-height: 11px;
+            line-height: 15px;
             font-size: 12px;
         }
-        #status-message {
-            margin-top: 15px;
+        
+        /* Error state */
+        #progress-steps li.error { color: var(--error-color); font-weight: 600; }
+        #progress-steps li.error::before {
+            content: '×';
+            background-color: var(--error-color);
+            color: white;
+            text-align: center;
+            line-height: 15px;
             font-size: 14px;
+        }
+
+        #status-message {
+            margin-top: 20px;
+            font-size: 13px;
             min-height: 20px;
-            color: #555;
+            color: var(--secondary-text-color);
             font-style: italic;
         }
     </style>
