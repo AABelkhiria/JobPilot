@@ -13,40 +13,45 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // The main logic flow
 async function generate(requestData) {
-  const sendStatusUpdate = (message) => chrome.runtime.sendMessage({ action: 'updateStatus', message });
-  const sendCompletionMessage = (status, message) => chrome.runtime.sendMessage({ action: 'generationComplete', status, message });
+    const sendStatusUpdate = (data) => chrome.runtime.sendMessage({ action: 'updateStatus', data });
+    const sendCompletionMessage = (status, data, message) => chrome.runtime.sendMessage({ action: 'generationComplete', status, data, message });
 
-  try {
-    sendStatusUpdate('Accessing your settings...');
-    const items = await chrome.storage.sync.get(['geminiApiKey', 'userInfo']);
-    
-    if (!items.geminiApiKey) {
-      chrome.runtime.openOptionsPage();
-      sendCompletionMessage('error', 'API key not found. Please set it in options.');
-      return;
+    let currentStep = 'settings'; // Keep track of the current step for error reporting
+    try {
+        sendStatusUpdate({ step: 'settings', message: 'Accessing your settings...' });
+        const items = await chrome.storage.sync.get(['geminiApiKey', 'userInfo']);
+        
+        if (!items.geminiApiKey) {
+            chrome.runtime.openOptionsPage();
+            sendCompletionMessage('error', { step: currentStep }, 'API key not found. Please set it in options.');
+            return;
+        }
+        if (!items.userInfo || !items.userInfo.profile || !items.userInfo.experience || !items.userInfo.skills) {
+            chrome.runtime.openOptionsPage();
+            sendCompletionMessage('error', { step: currentStep }, 'User info incomplete. Please check options.');
+            return;
+        }
+
+        currentStep = 'api-call';
+        sendStatusUpdate({ step: 'api-call', message: 'Contacting Gemini AI...' });
+        const rawApiResponse = await callGeminiApi(items.geminiApiKey, items.userInfo, requestData.pageContent, requestData.pageUrl);
+        const coverLetterText = cleanApiResponse(rawApiResponse);
+        
+        currentStep = 'create-pdf';
+        sendStatusUpdate({ step: 'create-pdf', message: 'AI response received. Creating PDF...' });
+        const { dataUri, filename } = generatePdfData(coverLetterText, items.userInfo);
+
+        currentStep = 'download';
+        sendStatusUpdate({ step: 'download', message: 'Preparing download...' });
+        await savePdfViaOffscreen(dataUri, filename);
+
+        // Success is handled by the popup listener after the final step is marked completed
+        sendCompletionMessage('success');
+
+    } catch (error) {
+        console.error(`Error during step '${currentStep}':`, error);
+        sendCompletionMessage('error', { step: currentStep }, error.message);
     }
-    if (!items.userInfo || !items.userInfo.profile || !items.userInfo.experience || !items.userInfo.skills) {
-      chrome.runtime.openOptionsPage();
-      sendCompletionMessage('error', 'User info is incomplete. Please fill out Profile, Experience, and Skills in options.');
-      return;
-    }
-
-    sendStatusUpdate('Contacting Gemini AI...');
-    const rawApiResponse = await callGeminiApi(items.geminiApiKey, items.userInfo, requestData.pageContent, requestData.pageUrl);
-    const coverLetterText = cleanApiResponse(rawApiResponse);
-    
-    sendStatusUpdate('AI response received. Creating PDF data...');
-    const { dataUri, filename } = generatePdfData(coverLetterText, items.userInfo);
-
-    sendStatusUpdate('Preparing download...');
-    await savePdfViaOffscreen(dataUri, filename);
-
-    sendCompletionMessage('success');
-
-  } catch (error) {
-    console.error("Background script error:", error);
-    sendCompletionMessage('error', error.message);
-  }
 }
 
 /**

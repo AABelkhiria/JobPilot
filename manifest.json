@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AI Cover Letter Generator",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Generates a cover letter for the job on the current page using Gemini.",
   "permissions": [
     "activeTab",

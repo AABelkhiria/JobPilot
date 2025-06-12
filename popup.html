@@ -4,18 +4,91 @@
     <title>Cover Letter AI</title>
     <style>
         body { font-family: sans-serif; width: 300px; padding: 10px; text-align: center; }
-        button { width: 100%; padding: 12px; font-size: 16px; background-color: #007BFF; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        button { width: 100%; padding: 12px; font-size: 16px; background-color: #007BFF; color: white; border: none; cursor: pointer; border-radius: 5px; margin-bottom: 20px; }
         button:hover { background-color: #0056b3; }
         button:disabled { background-color: #cccccc; cursor: not-allowed; }
-        #status { margin-top: 15px; font-size: 14px; min-height: 20px; }
-        .error { color: #D8000C; }
-        .info { color: #00529B; }
+
+        /* --- Progress Stepper Styles --- */
+        #progress-steps {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        #progress-steps li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 10px;
+            color: #aaa; /* Default pending state */
+            transition: color 0.3s ease;
+        }
+        #progress-steps li::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #aaa; /* Default pending bullet */
+            transition: background-color 0.3s ease;
+        }
+        /* Active state */
+        #progress-steps li.active {
+            color: #00529B; /* Active text color */
+            font-weight: bold;
+        }
+        #progress-steps li.active::before {
+            background-color: #007BFF; /* Active bullet color */
+        }
+        /* Completed state */
+        #progress-steps li.completed {
+            color: #4CAF50; /* Completed text color */
+        }
+        #progress-steps li.completed::before {
+            content: '✓'; /* Checkmark */
+            background-color: #4CAF50; /* Completed bullet color */
+            color: white;
+            text-align: center;
+            line-height: 11px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        /* Error state */
+        #progress-steps li.error {
+            color: #D8000C; /* Error text color */
+            font-weight: bold;
+        }
+        #progress-steps li.error::before {
+            content: '×'; /* X mark */
+            background-color: #D8000C;
+            color: white;
+            text-align: center;
+            line-height: 11px;
+            font-size: 12px;
+        }
+        #status-message {
+            margin-top: 15px;
+            font-size: 14px;
+            min-height: 20px;
+            color: #555;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
     <h1>Cover Letter Generator</h1>
     <button id="generateBtn">Generate & Download PDF</button>
-    <div id="status" class="info"></div>
+
+    <ul id="progress-steps">
+        <li id="step-read-page">Reading Page Content</li>
+        <li id="step-settings">Accessing Your Settings</li>
+        <li id="step-api-call">Contacting Gemini AI</li>
+        <li id="step-create-pdf">Creating PDF Document</li>
+        <li id="step-download">Downloading File</li>
+    </ul>
+
+    <div id="status-message"></div>
     <script src="popup.js"></script>
 </body>
 </html>
