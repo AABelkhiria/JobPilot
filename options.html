@@ -5,12 +5,12 @@
     <meta charset="utf-8">
     <style>
         :root {
-            /* --- "Dim Mode" Color Palette --- */
-            --bg-color: #22272e; /* Dark Slate Blue/Gray */
-            --surface-color: #2d333b; /* Lighter Gray for surfaces */
-            --text-color: #adbac7; /* Soft Light Gray */
-            --secondary-text-color: #768390; /* Muted Gray for secondary text */
-            --accent-color: #539bf5; /* Brighter Blue for accents */
+            /* "Dim Mode" Color Palette */
+            --bg-color: #22272e;
+            --surface-color: #2d333b;
+            --text-color: #adbac7;
+            --secondary-text-color: #768390;
+            --accent-color: #539bf5;
             --accent-hover-color: #6cb6f5;
             --success-color: #57ab5a;
             --error-color: #e5534b;
@@ -22,18 +22,16 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
+            padding: 20px 30px; 
+            box-sizing: border-box;
         }
 
         .container {
             width: 100%;
-            max-width: 500px;
         }
 
         h1 {
-            color: #cdd9e5; /* Slightly brighter for headings */
+            color: #cdd9e5;
             text-align: center;
             font-weight: 600;
         }
@@ -42,6 +40,18 @@
             text-align: center;
             color: var(--secondary-text-color);
             margin-bottom: 30px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr; 
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .column {
+            display: flex;
+            flex-direction: column;
         }
 
         label {
@@ -63,6 +73,15 @@
             font-size: 14px;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
+        
+        .column:nth-child(2) textarea {
+            flex-grow: 1;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
 
         input:focus, textarea:focus {
             outline: none;
@@ -70,18 +89,11 @@
             box-shadow: 0 0 0 3px rgba(83, 155, 245, 0.3);
         }
         
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-        
-        ::placeholder {
-            color: #6a737d;
-        }
+        ::placeholder { color: #6a737d; }
 
         button {
             width: 100%;
-            margin-top: 30px;
+            margin-top: 10px;
             padding: 12px 15px;
             background-color: var(--accent-color);
             color: #ffffff;
@@ -93,9 +105,7 @@
             transition: background-color 0.2s;
         }
 
-        button:hover {
-            background-color: var(--accent-hover-color);
-        }
+        button:hover { background-color: var(--accent-hover-color); }
 
         #status {
             margin-top: 15px;
@@ -103,6 +113,13 @@
             color: var(--success-color);
             font-weight: 500;
         }
+        
+        @media (max-width: 850px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -110,34 +127,43 @@
         <h1>Settings</h1>
         <p>Your information will be used to generate the cover letter.</p>
         
-        <label for="apiKey">Gemini API Key</label>
-        <input type="password" id="apiKey" placeholder="Paste your secret API key here">
+        <div class="form-grid">
+            
+            <!-- Column 1: User Details -->
+            <div class="column">
+                <label for="apiKey">Gemini API Key</label>
+                <input type="password" id="apiKey" placeholder="Paste your secret API key here">
 
-        <label for="fullName">Full Name</label>
-        <input type="text" id="fullName" placeholder="e.g., Jane Doe">
+                <label for="fullName">Full Name</label>
+                <input type="text" id="fullName" placeholder="e.g., Jane Doe">
 
-        <label for="email">Email</label>
-        <input type="email" id="email" placeholder="e.g., jane.doe@email.com">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="e.g., jane.doe@email.com">
 
-        <label for="phone">Phone Number</label>
-        <input type="tel" id="phone" placeholder="e.g., (555) 123-4567">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" placeholder="e.g., (555) 123-4567">
 
-        <label for="address">Address (Optional)</label>
-        <input type="text" id="address" placeholder="e.g., City, State">
+                <label for="address">Address (Optional)</label>
+                <input type="text" id="address" placeholder="e.g., City, State">
+            </div>
+            
+            <!-- Column 2: Professional Summary -->
+            <div class="column">
+                <label for="profile">Profile Summary</label>
+                <textarea id="profile" rows="4" placeholder="A brief, 2-3 sentence professional summary..."></textarea>
+                
+                <label for="experience">Experience Summary</label>
+                <textarea id="experience" rows="8" placeholder="Summarize your key work experiences and accomplishments..."></textarea>
 
-        <label for="profile">Profile Summary</label>
-        <textarea id="profile" rows="3" placeholder="A brief, 2-3 sentence professional summary..."></textarea>
+                <label for="skills">Key Skills</label>
+                <textarea id="skills" rows="5" placeholder="JavaScript, React, Node.js, Python, AWS..."></textarea>
+            </div>
 
-        <label for="experience">Experience Summary</label>
-        <textarea id="experience" rows="6" placeholder="Summarize your key work experiences and accomplishments..."></textarea>
-
-        <label for="skills">Key Skills</label>
-        <textarea id="skills" rows="4" placeholder="JavaScript, React, Node.js, Python, AWS..."></textarea>
+        </div>
 
         <button id="save">Save Settings</button>
         <div id="status"></div>
     </div>
-
     <script src="options.js"></script>
 </body>
 </html>
