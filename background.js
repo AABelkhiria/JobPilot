@@ -13,6 +13,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     rateJob(request);
     return true;
   }
+  if (request.action === "generateInPageAnswer") {
+    generateAnswer(request, sendResponse);
+    return true;
+  }
 });
 
 async function rateJob(requestData) {
@@ -178,6 +182,7 @@ async function callGeminiApi(apiKey, userInfo, jobDescription, jobUrl) {
       JOB DESCRIPTION:
       ${jobDescription.substring(0, 28000)} 
       ---
+      It should connect my skills and experience to the requirements listed in the job post. do not mention skills or experiences that are not matching the job description.
     `;
 
   const requestBody = { contents: [{ parts: [{ text: prompt }] }] };
@@ -219,4 +224,55 @@ async function savePdfViaOffscreen(dataUri, filename) {
   setTimeout(() => {
     chrome.runtime.sendMessage({ target: 'offscreen-doc', action: 'download-pdf', dataUri: dataUri, filename: filename });
   }, 500);
+}
+
+async function generateAnswer(requestData, sendResponse) {
+  try {
+    const items = await chrome.storage.sync.get(['geminiApiKey', 'userInfo']);
+    if (!items.geminiApiKey || !items.userInfo?.skills) {
+      sendResponse({ answer: 'API Key or user skills not set in options.' });
+      chrome.runtime.openOptionsPage();
+      return;
+    }
+
+    const answer = await callGeminiForAnswer(items.geminiApiKey, items.userInfo, requestData.jobDescription, requestData.question);
+    sendResponse({ answer });
+
+  } catch (error) {
+    console.error("Answer Generation Error:", error);
+    sendResponse({ answer: `Error: ${error.message}` });
+  }
+}
+
+async function callGeminiForAnswer(apiKey, userInfo, jobDescription, question) {
+  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+  const prompt = `
+        Based on the following job description and my professional information, answer the question below. Your answer must be 1-2 sentences long.
+
+        MY PROFESSIONAL INFORMATION:
+        - Profile: ${userInfo.profile}
+        - Experience: ${userInfo.experience}
+        - Key Skills: ${userInfo.skills}
+
+        JOB DESCRIPTION:
+        ${jobDescription.substring(0, 15000)}
+
+        QUESTION:
+        ${question}
+
+        Answer (1-2 sentences):
+    `;
+
+  const requestBody = { contents: [{ parts: [{ text: prompt }] }] };
+  const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(`API request failed: ${errorData.error.message}`);
+  }
+
+  const data = await response.json();
+  if (!data.candidates || !data.candidates[0].content.parts[0].text) { throw new Error('Received an invalid response from the API.'); }
+  return data.candidates[0].content.parts[0].text;
 }

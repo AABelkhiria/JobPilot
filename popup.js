@@ -1,10 +1,14 @@
 const generateBtn = document.getElementById('generateBtn');
 const rateBtn = document.getElementById('rateBtn');
+const inPageApplyBtn = document.getElementById('inPageApplyBtn');
 const statusMessageDiv = document.getElementById('status-message');
 const progressSteps = document.getElementById('progress-steps');
 const ratingDisplay = document.getElementById('rating-display');
 const starRatingDiv = document.querySelector('.star-rating');
 const ratingExplanationDiv = document.getElementById('rating-explanation');
+const inPageApplySection = document.getElementById('in-page-apply-section');
+const expressInterestBtn = document.getElementById('expressInterestBtn');
+const inPageAnswerTextarea = document.getElementById('inPageAnswerTextarea');
 const STEPS_IN_ORDER = ['read-page', 'settings', 'api-call', 'create-pdf', 'download'];
 let currentAction = null;
 
@@ -18,16 +22,19 @@ const consList = document.getElementById('cons-list');
 function showView(view) {
   progressSteps.style.display = view === 'progress' ? 'block' : 'none';
   ratingDisplay.style.display = view === 'rating' ? 'block' : 'none';
+  inPageApplySection.style.display = view === 'in-page-apply' ? 'block' : 'none';
 }
 
 function setButtonsDisabled(disabled) {
   generateBtn.disabled = disabled;
   rateBtn.disabled = disabled;
+  inPageApplyBtn.disabled = disabled;
 }
 
 // --- Event Listeners ---
 rateBtn.addEventListener('click', () => handleAction('rate'));
 generateBtn.addEventListener('click', () => handleAction('generate'));
+inPageApplyBtn.addEventListener('click', () => handleAction('inPageApply'));
 
 function handleAction(type) {
   currentAction = type;
@@ -36,7 +43,7 @@ function handleAction(type) {
   if (type === 'generate') {
     showView('progress');
     updateProgress('read-page', 'active', 'Reading page content...');
-  } else { // 'rate'
+  } else if (type === 'rate') {
     showView('rating');
     ratingSummary.textContent = '';
     prosContainer.style.display = 'none';
@@ -47,25 +54,100 @@ function handleAction(type) {
     renderRating({ rating: 0 }); // Reset stars
     starRatingDiv.classList.add('loading');
     statusMessageDiv.textContent = 'Analyzing job match...';
+  } else if (type === 'inPageApply') {
+    showView('in-page-apply');
+    statusMessageDiv.textContent = 'Ready to express interest.';
+    expressInterestBtn.style.display = 'block';
+    inPageAnswerTextarea.style.display = 'none';
+    inPageAnswerTextarea.textContent = '';
   }
 
+  // Only inject content.js and send message if not in-page apply
+  if (type === 'generate' || type === 'rate' || type === 'inPageApply') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.scripting.executeScript(
+        { target: { tabId: tabs[0].id }, files: ['content.js'] },
+        () => {
+          if (chrome.runtime.lastError) {
+            console.error("Script injection error:", chrome.runtime.lastError.message);
+            if (currentAction === 'generate') {
+              updateProgress('read-page', 'error', `Error: ${chrome.runtime.lastError.message}`);
+            } else {
+              statusMessageDiv.textContent = `Error reading page: ${chrome.runtime.lastError.message}`;
+              statusMessageDiv.style.color = 'var(--error-color)';
+            }
+            setButtonsDisabled(false);
+          }
+        }
+      );
+    });
+  }
+}
+
+// --- New Event Listener for In-Page Apply Button ---
+expressInterestBtn.addEventListener('click', () => {
+  setButtonsDisabled(true);
+  expressInterestBtn.style.display = 'none';
+  inPageAnswerTextarea.style.display = 'block';
+  statusMessageDiv.textContent = 'Generating answer...';
+
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.scripting.executeScript(
-      { target: { tabId: tabs[0].id }, files: ['content.js'] },
-      () => {
-        if (chrome.runtime.lastError) {
-          if (currentAction === 'generate') {
-            updateProgress('read-page', 'error', `Error: ${chrome.runtime.lastError.message}`);
+    chrome.tabs.sendMessage(tabs[0].id, { action: "requestPageContent" }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Error receiving page content for in-page apply:", chrome.runtime.lastError.message);
+        statusMessageDiv.textContent = `Error: ${chrome.runtime.lastError.message}`;
+        statusMessageDiv.style.color = 'var(--error-color)';
+        setButtonsDisabled(false);
+        return;
+      }
+
+      if (response && response.action === "getPageContent") {
+        chrome.runtime.sendMessage({
+          action: 'generateInPageAnswer',
+          question: "Express genuine interest in the company. Highlight 1-2 key reasons you're a good fit.",
+          jobDescription: response.content
+        }, (aiResponse) => {
+          setButtonsDisabled(false);
+          if (aiResponse && aiResponse.answer) {
+            inPageAnswerTextarea.textContent = aiResponse.answer;
+            statusMessageDiv.textContent = 'Answer generated.';
+            statusMessageDiv.style.color = 'var(--secondary-text-color)';
           } else {
-            statusMessageDiv.textContent = `Error reading page.`;
+            inPageAnswerTextarea.textContent = 'Error generating answer.';
+            statusMessageDiv.textContent = `Error: ${aiResponse.answer || 'Unknown error'}`;
             statusMessageDiv.style.color = 'var(--error-color)';
           }
-          setButtonsDisabled(false);
-        }
+        });
+      } else {
+        statusMessageDiv.textContent = 'Error: Could not get page content.';
+        statusMessageDiv.style.color = 'var(--error-color)';
+        setButtonsDisabled(false);
       }
-    );
+    });
   });
-}
+});
+
+// --- Copy to Clipboard for In-Page Answer ---
+inPageAnswerTextarea.addEventListener('click', async () => {
+  const textToCopy = inPageAnswerTextarea.textContent;
+  if (textToCopy) {
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      const originalStatusText = statusMessageDiv.textContent;
+      const originalStatusColor = statusMessageDiv.style.color;
+      statusMessageDiv.textContent = 'Answer copied to clipboard!';
+      statusMessageDiv.style.color = 'var(--success-color)';
+      setTimeout(() => {
+        statusMessageDiv.textContent = originalStatusText;
+        statusMessageDiv.style.color = originalStatusColor;
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+      statusMessageDiv.textContent = 'Failed to copy answer.';
+      statusMessageDiv.style.color = 'var(--error-color)';
+    }
+  }
+});
 
 // --- Main Message Listener ---
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

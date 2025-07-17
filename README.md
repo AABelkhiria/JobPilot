@@ -13,11 +13,12 @@ A Chrome extension that reads a job description from the active page, uses the G
 - Personalized Content: Uses your name, contact details, and experience summary from a dedicated settings page.
 - PDF Output: Automatically generates and downloads a professionally formatted PDF.
 - Real-time Feedback: Displays live status updates throughout the generation process.
+- **In-Page Apply Assistant**: Provides AI-generated concise answers to common application questions directly within the popup, with a single click to copy the answer.
 
 ## Technology Stack
 - Platform: Google Chrome Extension (Manifest V3)
 - Core Logic: JavaScript (ES6+)
-- Frontend: HTML5 & CSS3
+- Frontend: HTML5 & CSS3 (with separated CSS files for better organization)
 - AI Model: Google Gemini Pro via the Generative Language API
 - PDF Generation: [jsPDF](https://github.com/parallax/jsPDF)
 - Chrome APIs:
@@ -51,8 +52,10 @@ git clone git@github.com:AABelkhiria/ai-cover-letter-generator.git
 ## How to Use
 1. Navigate to a webpage containing a job description (e.g., a LinkedIn, Indeed, or company careers page).
 2. Click the extension's icon in the Chrome toolbar to open the popup.
-3. Click the "Generate & Download PDF" button.
-4. The extension will show its progress. After a few seconds, a PDF file will be automatically downloaded to your computer.
+3. Choose your desired action:
+    - **Generate Letter**: Click the "Generate Letter" button. The extension will generate a tailored cover letter and download it as a PDF.
+    - **Rate Job**: Click the "Rate Job" button. The extension will analyze your fit for the role and provide a rating with pros and cons.
+    - **In-Page Apply**: Click the "In-Page Apply" button. Within the popup, click "Express Interest" to get a concise, AI-generated answer to a common application question. Click the answer to copy it to your clipboard.
 
 ## Project Structure
 ```
@@ -61,6 +64,7 @@ cover-letter-ai/
 ├── lib/
 │   └── jspdf.umd.min.js  # The jsPDF library
 ├── manifest.json         # The heart of the extension, defines all components and permissions
+├── popup.css             # Styles for the main popup UI
 ├── background.js         # Service worker: Handles API calls and core logic
 ├── content.js            # Injected into the webpage to read its content
 ├── popup.html            # The HTML for the main popup UI
