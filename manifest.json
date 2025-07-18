@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "AI Cover Letter Generator",
-  "version": "1.5",
-  "description": "Generates a cover letter for the job on the current page using Gemini.",
+  "name": "JobPilot",
+  "version": "1.6",
+  "description": "AI-powered assistant to generate tailored cover letters, rate your job fit, and help with application forms using the Gemini API.",
   "permissions": [
     "activeTab",
     "scripting",
