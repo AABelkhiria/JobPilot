@@ -18,10 +18,12 @@ This feature helps you quickly assess whether a job is a good match for your pro
 - **Output**: It returns a simple rating and a concise list of "Pros" and "Cons," giving you a quick overview of how well your skills align with the employer's requirements.
 
 ### 3. In-Page Apply Assistant
-This feature is designed to speed up the process of filling out online application forms.
+This feature is designed to speed up the process of filling out online application forms and sending spontaneous applications.
 
-- **How it Works**: When you click the "In-Page Apply" button, the UI presents an "Express Interest" option. This sends a request to the AI to generate a short, positive statement of interest based on the job description.
-- **One-Click Copy**: The generated text appears directly in the popup. You can click the text to instantly copy it to your clipboard, making it easy to paste into application form fields like "Why are you interested in this role?".
+- **How it Works**: When you click the "In-Page Apply" button, the UI presents two options:
+  - **Express Interest**: This sends a request to the AI to generate a short, positive statement of interest based on the job description.
+  - **Spontaneous Application**: This generates a brief, professional email to inquire about potential job openings, based on the content of the company's website.
+- **One-Click Copy & Mail**: The generated text appears directly in the popup. You can click the text to instantly copy it to your clipboard. For spontaneous applications, it will also open a `mailto:` link in a new tab, pre-filled with the generated content. This makes it easy to paste into application forms or send emails quickly.
 
 ## Technical Features
 

@@ -8,9 +8,11 @@ const starRatingDiv = document.querySelector('.star-rating');
 const ratingExplanationDiv = document.getElementById('rating-explanation');
 const inPageApplySection = document.getElementById('in-page-apply-section');
 const expressInterestBtn = document.getElementById('expressInterestBtn');
+const spontaneousApplicationBtn = document.getElementById('spontaneousApplicationBtn');
 const inPageAnswerTextarea = document.getElementById('inPageAnswerTextarea');
 const STEPS_IN_ORDER = ['read-page', 'settings', 'api-call', 'create-pdf', 'download'];
 let currentAction = null;
+let spontaneousEmailData = null;
 
 const ratingSummary = document.getElementById('rating-summary');
 const prosContainer = document.getElementById('pros-container');
@@ -58,6 +60,7 @@ function handleAction(type) {
     showView('in-page-apply');
     statusMessageDiv.textContent = 'Ready to express interest.';
     expressInterestBtn.style.display = 'block';
+    spontaneousApplicationBtn.style.display = 'block';
     inPageAnswerTextarea.style.display = 'none';
     inPageAnswerTextarea.textContent = '';
   }
@@ -88,6 +91,7 @@ function handleAction(type) {
 expressInterestBtn.addEventListener('click', () => {
   setButtonsDisabled(true);
   expressInterestBtn.style.display = 'none';
+  spontaneousApplicationBtn.style.display = 'none';
   inPageAnswerTextarea.style.display = 'block';
   statusMessageDiv.textContent = 'Generating answer...';
 
@@ -127,6 +131,70 @@ expressInterestBtn.addEventListener('click', () => {
   });
 });
 
+spontaneousApplicationBtn.addEventListener('click', () => {
+  setButtonsDisabled(true);
+  expressInterestBtn.style.display = 'none';
+  spontaneousApplicationBtn.style.display = 'none';
+  inPageAnswerTextarea.style.display = 'block';
+  statusMessageDiv.textContent = 'Generating email...';
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.sendMessage(tabs[0].id, { action: "requestPageContent" }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Error receiving page content for spontaneous application:", chrome.runtime.lastError.message);
+        statusMessageDiv.textContent = `Error: ${chrome.runtime.lastError.message}`;
+        statusMessageDiv.style.color = 'var(--error-color)';
+        setButtonsDisabled(false);
+        return;
+      }
+
+      if (response && response.action === "getPageContent") {
+        chrome.runtime.sendMessage({
+          action: 'generateInPageAnswer',
+          question: "Write a brief and professional email for a spontaneous application to the company, based on the provided web page content. The email should express interest in the company, briefly mention my potential value, and inquire about any suitable open positions. The tone should be proactive and respectful. Return the response as a JSON object with the following keys: 'email', 'subject', 'body'.",
+          jobDescription: response.content
+        }, (aiResponse) => {
+          setButtonsDisabled(false);
+          if (aiResponse && aiResponse.answer) {
+            console.log("AI Response:", aiResponse.answer);
+            try {
+              let jsonString = aiResponse.answer;
+              const firstBrace = jsonString.indexOf('{');
+              const lastBrace = jsonString.lastIndexOf('}');
+              if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                jsonString = jsonString.substring(firstBrace, lastBrace + 1);
+              }
+              const answer = JSON.parse(jsonString);
+              if (answer.body) {
+                spontaneousEmailData = answer;
+                inPageAnswerTextarea.textContent = answer.body;
+                statusMessageDiv.textContent = 'Email generated.';
+                statusMessageDiv.style.color = 'var(--secondary-text-color)';
+              } else {
+                inPageAnswerTextarea.textContent = 'Error: Invalid response format from AI (missing body).';
+                statusMessageDiv.textContent = 'Error: Invalid response format from AI (missing body).';
+                statusMessageDiv.style.color = 'var(--error-color)';
+              }
+            } catch (e) {
+              inPageAnswerTextarea.textContent = 'Error: Could not parse AI response.';
+              statusMessageDiv.textContent = 'Error: Could not parse AI response.';
+              statusMessageDiv.style.color = 'var(--error-color)';
+            }
+          } else {
+            inPageAnswerTextarea.textContent = 'Error generating email.';
+            statusMessageDiv.textContent = `Error: ${aiResponse.answer || 'Unknown error'}`;
+            statusMessageDiv.style.color = 'var(--error-color)';
+          }
+        });
+      } else {
+        statusMessageDiv.textContent = 'Error: Could not get page content.';
+        statusMessageDiv.style.color = 'var(--error-color)';
+        setButtonsDisabled(false);
+      }
+    });
+  });
+});
+
 // --- Copy to Clipboard for In-Page Answer ---
 inPageAnswerTextarea.addEventListener('click', async () => {
   const textToCopy = inPageAnswerTextarea.textContent;
@@ -135,8 +203,14 @@ inPageAnswerTextarea.addEventListener('click', async () => {
       await navigator.clipboard.writeText(textToCopy);
       const originalStatusText = statusMessageDiv.textContent;
       const originalStatusColor = statusMessageDiv.style.color;
-      statusMessageDiv.textContent = 'Answer copied to clipboard!';
+      statusMessageDiv.textContent = 'Copied to clipboard!';
       statusMessageDiv.style.color = 'var(--success-color)';
+
+      if (spontaneousEmailData && spontaneousEmailData.email && spontaneousEmailData.subject && spontaneousEmailData.body) {
+        const mailtoLink = `mailto:${spontaneousEmailData.email}?subject=${encodeURIComponent(spontaneousEmailData.subject)}&body=${encodeURIComponent(spontaneousEmailData.body)}`;
+        chrome.tabs.create({ url: mailtoLink });
+      }
+
       setTimeout(() => {
         statusMessageDiv.textContent = originalStatusText;
         statusMessageDiv.style.color = originalStatusColor;

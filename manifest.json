@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "JobPilot",
-  "version": "1.6",
+  "version": "1.7",
   "description": "AI-powered assistant to generate tailored cover letters, rate your job fit, and help with application forms using the Gemini API.",
   "permissions": [
     "activeTab",

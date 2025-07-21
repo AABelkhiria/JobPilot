@@ -12,7 +12,7 @@ You can either download the project as a ZIP file or clone it using Git.
 
 ```bash
 # Clone the repository to your local machine
-git clone https://github.com/AABelkhiria/ai-cover-letter-generator.git
+git clone git@github.com:AABelkhiria/JobPilot.git
 ```
 If you download a ZIP, be sure to unzip it into a dedicated folder.
 
@@ -57,7 +57,10 @@ Once configured, using the extension is simple.
 3. **Choose an action**:
     - **Generate Letter**: Reads the page and generates a full cover letter tailored to the job. The letter will be downloaded automatically as a PDF.
     - **Rate Job**: Analyzes how your experience summary matches the job description and gives you a simple rating with pros and cons.
-    - **In-Page Apply**: Helps you fill out application forms. Click "Express Interest" to get a concise, AI-generated answer for fields like "Tell us about yourself." Click the generated text to copy it.
+    - **In-Page Apply**: Helps you fill out application forms. 
+        - Click **"Express Interest"** to get a concise, AI-generated answer for fields like "Tell us about yourself." 
+        - Click **"Spontaneous Application"** to generate a brief email inquiring about job openings. 
+        - Click the generated text to copy it. For spontaneous applications, this will also open a pre-filled email draft in a new tab.
 
 ## Troubleshooting
 

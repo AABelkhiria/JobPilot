@@ -9,7 +9,7 @@ A Chrome extension that reads a job description from the active page, uses the G
 ## Core Features
 - **AI Cover Letter Generation**: Creates a tailored cover letter from a job description and downloads it as a PDF.
 - **"Rate My Fit" Analysis**: Analyzes how your profile matches a job and provides a rating with pros and cons.
-- **In-Page Apply Assistant**: Generates concise, AI-powered answers for common application form questions.
+- **In-Page Apply Assistant**: Generates concise, AI-powered answers for common application form questions and helps draft emails for spontaneous applications.
 - **Context-Aware & Personalized**: Reads the job page context and uses your stored personal info for generation.
 - **Real-time Feedback**: Displays live status updates during the generation process.
 
